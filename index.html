@@ -45,27 +45,18 @@
             opacity: 0.9;
         }
 
-        .upload-section {
+        .load-section {
             padding: 40px;
             text-align: center;
             border-bottom: 1px solid #b8d4ea;
         }
 
-        .file-input-wrapper {
-            position: relative;
-            display: inline-block;
-            margin-bottom: 20px;
-        }
-
-        .file-input {
-            display: none;
-        }
-
-        .file-input-label {
+        .load-button {
             display: inline-block;
             padding: 15px 30px;
             background: linear-gradient(135deg, #2c3e50 0%, #1a252f 100%);
             color: white;
+            border: none;
             border-radius: 50px;
             cursor: pointer;
             font-size: 0.8rem;
@@ -74,12 +65,18 @@
             box-shadow: 0 4px 15px rgba(44, 62, 80, 0.3);
         }
 
-        .file-input-label:hover {
+        .load-button:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(44, 62, 80, 0.4);
         }
 
-        .file-name {
+        .load-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status-message {
             margin-top: 15px;
             font-size: 0.7rem;
             color: #2c3e50;
@@ -293,17 +290,14 @@
     <div class="container">
         <div class="header">
             <h1>CSV Viewer</h1>
-<p>Upload and visualize your CSV data with professional styling</p>
+<p>TPHC Inventory Data Viewer - Auto-loading from local CSV file</p>
         </div>
         
-        <div class="upload-section">
-            <div class="file-input-wrapper">
-                <input type="file" id="csvFile" class="file-input" accept=".csv" />
-                <label for="csvFile" class="file-input-label">
-                    📁 Choose CSV File
-                </label>
-            </div>
-            <div class="file-name" id="fileName"></div>
+        <div class="load-section">
+            <button id="loadButton" class="load-button">
+                📊 Load TPHC Inventory
+            </button>
+            <div class="status-message" id="statusMessage"></div>
             <div class="error-message" id="errorMessage"></div>
         </div>
         
@@ -318,9 +312,20 @@
     </div>
 
     <script>
-        document.getElementById('csvFile').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            const fileName = document.getElementById('fileName');
+        const CSV_FILE = 'TPHC_Inventory.csv';
+        
+        document.getElementById('loadButton').addEventListener('click', function() {
+            loadCSVFile();
+        });
+        
+        // Auto-load on page load
+        window.addEventListener('load', function() {
+            loadCSVFile();
+        });
+        
+        async function loadCSVFile() {
+            const loadButton = document.getElementById('loadButton');
+            const statusMessage = document.getElementById('statusMessage');
             const errorMessage = document.getElementById('errorMessage');
             const dataSection = document.getElementById('dataSection');
             
@@ -328,38 +333,44 @@
             errorMessage.style.display = 'none';
             errorMessage.textContent = '';
             
-            if (file) {
-                fileName.textContent = `Selected: ${file.name}`;
+            // Show loading state
+            loadButton.disabled = true;
+            loadButton.textContent = '🔄 Loading...';
+            statusMessage.textContent = 'Loading TPHC inventory data...';
+            
+            dataSection.style.display = 'block';
+            document.getElementById('tableHead').innerHTML = '';
+            document.getElementById('tableBody').innerHTML = '';
+            
+            try {
+                const response = await fetch(CSV_FILE);
                 
-                // Validate file type
-                if (!file.name.toLowerCase().endsWith('.csv')) {
-                    showError('Please select a valid CSV file.');
-                    return;
+                if (!response.ok) {
+                    throw new Error(`Failed to load ${CSV_FILE}: ${response.status} ${response.statusText}`);
                 }
                 
-                // Show loading
-                dataSection.style.display = 'block';
-                    document.getElementById('tableHead').innerHTML = '';
-                document.getElementById('tableBody').innerHTML = '';
+                const csvText = await response.text();
                 
-                // Read and parse CSV
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    try {
-                        const csv = event.target.result;
-                        const data = parseCSV(csv);
-                        displayData(data);
-                    } catch (error) {
-                        showError('Error parsing CSV file. Please check the file format.');
-                        console.error('CSV parsing error:', error);
-                    }
-                };
-                reader.readAsText(file);
-            } else {
-                fileName.textContent = '';
+                if (!csvText || csvText.trim() === '') {
+                    throw new Error('CSV file is empty');
+                }
+                
+                const data = parseCSV(csvText);
+                displayData(data);
+                
+                statusMessage.textContent = `Loaded ${CSV_FILE} successfully - Last updated: ${new Date().toLocaleString()}`;
+                loadButton.textContent = '🔄 Refresh Data';
+                
+            } catch (error) {
+                console.error('Error loading CSV:', error);
+                showError(`Failed to load ${CSV_FILE}. Make sure the file exists in the same directory.`);
+                statusMessage.textContent = '';
+                loadButton.textContent = '🔄 Retry Load';
                 dataSection.style.display = 'none';
+            } finally {
+                loadButton.disabled = false;
             }
-        });
+        }
         
         function parseCSV(csv) {
             const lines = csv.split('\n').filter(line => line.trim() !== '');
