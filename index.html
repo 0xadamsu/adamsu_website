@@ -113,6 +113,112 @@
             font-size: 0.65rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            position: relative;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .filter-dropdown {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 2px 4px;
+            font-size: 0.5rem;
+            cursor: pointer;
+            color: #2c3e50;
+            margin-left: 8px;
+        }
+
+        .filter-dropdown:hover {
+            background: #f0f0f0;
+        }
+
+        .filter-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            z-index: 1000;
+            min-width: 200px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .filter-menu.show {
+            display: block;
+        }
+
+        .filter-search {
+            width: 100%;
+            padding: 8px;
+            border: none;
+            border-bottom: 1px solid #eee;
+            font-size: 0.6rem;
+            outline: none;
+        }
+
+        .filter-options {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .filter-option {
+            padding: 6px 12px;
+            font-size: 0.6rem;
+            color: #2c3e50;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+
+        .filter-option:hover {
+            background: #f0f8ff;
+        }
+
+        .filter-option input[type="checkbox"] {
+            margin-right: 8px;
+        }
+
+        .filter-actions {
+            padding: 8px;
+            border-top: 1px solid #eee;
+            display: flex;
+            gap: 8px;
+        }
+
+        .filter-btn {
+            padding: 4px 8px;
+            font-size: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            cursor: pointer;
+            background: white;
+        }
+
+        .filter-btn:hover {
+            background: #f0f0f0;
+        }
+
+        .filter-btn.primary {
+            background: #2c3e50;
+            color: white;
+            border-color: #2c3e50;
+        }
+
+        .filter-btn.primary:hover {
+            background: #1a252f;
+        }
+
+        .filtered-row {
+            display: none !important;
         }
 
         td {
@@ -300,15 +406,32 @@
             const { headers, rows } = data;
             
             
-            // Create table headers
+            // Create table headers with filters
             const tableHead = document.getElementById('tableHead');
             const headerRow = document.createElement('tr');
-            headers.forEach(header => {
+            headers.forEach((header, index) => {
                 const th = document.createElement('th');
-                th.textContent = header || 'Column';
+                th.innerHTML = `
+                    <div class="header-content">
+                        <span>${header || 'Column'}</span>
+                        <span class="filter-dropdown" onclick="toggleFilter(${index})">▼</span>
+                    </div>
+                    <div class="filter-menu" id="filter-${index}">
+                        <input type="text" class="filter-search" placeholder="Search..." onkeyup="filterSearch(${index})">
+                        <div class="filter-options" id="filter-options-${index}"></div>
+                        <div class="filter-actions">
+                            <button class="filter-btn" onclick="selectAllFilter(${index})">All</button>
+                            <button class="filter-btn" onclick="clearAllFilter(${index})">None</button>
+                            <button class="filter-btn primary" onclick="applyFilter(${index})">Apply</button>
+                        </div>
+                    </div>
+                `;
                 headerRow.appendChild(th);
             });
             tableHead.appendChild(headerRow);
+            
+            // Initialize filters
+            initializeFilters(data);
             
             // Create table body
             const tableBody = document.getElementById('tableBody');
@@ -322,6 +445,111 @@
                 tableBody.appendChild(tr);
             });
         }
+        
+        let currentData = null;
+        let activeFilters = {};
+        
+        function initializeFilters(data) {
+            currentData = data;
+            const { headers, rows } = data;
+            
+            headers.forEach((header, columnIndex) => {
+                // Get unique values for this column
+                const uniqueValues = [...new Set(rows.map(row => row[columnIndex] || ''))]
+                    .sort((a, b) => a.localeCompare(b));
+                
+                // Populate filter options
+                const optionsContainer = document.getElementById(`filter-options-${columnIndex}`);
+                optionsContainer.innerHTML = uniqueValues.map(value => `
+                    <div class="filter-option">
+                        <input type="checkbox" id="filter-${columnIndex}-${value}" value="${value}" checked>
+                        <label for="filter-${columnIndex}-${value}">${value || '(Empty)'}</label>
+                    </div>
+                `).join('');
+                
+                // Initialize active filters
+                activeFilters[columnIndex] = new Set(uniqueValues);
+            });
+        }
+        
+        function toggleFilter(columnIndex) {
+            // Close all other filter menus
+            document.querySelectorAll('.filter-menu').forEach(menu => {
+                if (menu.id !== `filter-${columnIndex}`) {
+                    menu.classList.remove('show');
+                }
+            });
+            
+            // Toggle current menu
+            const filterMenu = document.getElementById(`filter-${columnIndex}`);
+            filterMenu.classList.toggle('show');
+        }
+        
+        function filterSearch(columnIndex) {
+            const searchInput = document.querySelector(`#filter-${columnIndex} .filter-search`);
+            const searchTerm = searchInput.value.toLowerCase();
+            const options = document.querySelectorAll(`#filter-options-${columnIndex} .filter-option`);
+            
+            options.forEach(option => {
+                const label = option.querySelector('label').textContent.toLowerCase();
+                option.style.display = label.includes(searchTerm) ? 'flex' : 'none';
+            });
+        }
+        
+        function selectAllFilter(columnIndex) {
+            const checkboxes = document.querySelectorAll(`#filter-options-${columnIndex} input[type="checkbox"]`);
+            checkboxes.forEach(checkbox => checkbox.checked = true);
+        }
+        
+        function clearAllFilter(columnIndex) {
+            const checkboxes = document.querySelectorAll(`#filter-options-${columnIndex} input[type="checkbox"]`);
+            checkboxes.forEach(checkbox => checkbox.checked = false);
+        }
+        
+        function applyFilter(columnIndex) {
+            const checkboxes = document.querySelectorAll(`#filter-options-${columnIndex} input[type="checkbox"]:checked`);
+            const selectedValues = Array.from(checkboxes).map(cb => cb.value);
+            
+            activeFilters[columnIndex] = new Set(selectedValues);
+            
+            // Apply all filters
+            applyAllFilters();
+            
+            // Close filter menu
+            document.getElementById(`filter-${columnIndex}`).classList.remove('show');
+        }
+        
+        function applyAllFilters() {
+            const tableBody = document.getElementById('tableBody');
+            const rows = tableBody.querySelectorAll('tr');
+            
+            rows.forEach((row, rowIndex) => {
+                let showRow = true;
+                
+                // Check each column filter
+                Object.keys(activeFilters).forEach(columnIndex => {
+                    const cellValue = currentData.rows[rowIndex][columnIndex] || '';
+                    if (!activeFilters[columnIndex].has(cellValue)) {
+                        showRow = false;
+                    }
+                });
+                
+                if (showRow) {
+                    row.classList.remove('filtered-row');
+                } else {
+                    row.classList.add('filtered-row');
+                }
+            });
+        }
+        
+        // Close filter menus when clicking outside
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('.filter-dropdown') && !event.target.closest('.filter-menu')) {
+                document.querySelectorAll('.filter-menu').forEach(menu => {
+                    menu.classList.remove('show');
+                });
+            }
+        });
         
         function showError(message) {
             const errorMessage = document.getElementById('errorMessage');
