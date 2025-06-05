@@ -131,36 +131,6 @@
             transition: background-color 0.2s ease;
         }
 
-        .stats {
-            display: flex;
-            justify-content: space-around;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-        }
-
-        .stat-card {
-            background: linear-gradient(135deg, #2c3e50 0%, #1a252f 100%);
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            min-width: 150px;
-            margin: 5px;
-            box-shadow: 0 4px 15px rgba(44, 62, 80, 0.2);
-        }
-
-        .stat-number {
-            font-size: 1.4rem;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .stat-label {
-            font-size: 0.6rem;
-            opacity: 0.9;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
 
         .error-message {
             color: #e74c3c;
@@ -210,15 +180,6 @@
                 padding: 20px;
             }
             
-            .stats {
-                flex-direction: column;
-                align-items: center;
-            }
-            
-            .stat-card {
-                width: 100%;
-                max-width: 200px;
-            }
         }
     </style>
 </head>
@@ -241,7 +202,6 @@
         </div>
         
         <div class="data-section" id="dataSection">
-            <div class="stats" id="stats"></div>
             <div class="table-container">
                 <table id="dataTable">
                     <thead id="tableHead"></thead>
@@ -273,8 +233,7 @@
                 
                 // Show loading
                 dataSection.style.display = 'block';
-                document.getElementById('stats').innerHTML = '<div class="loading">Processing CSV file...</div>';
-                document.getElementById('tableHead').innerHTML = '';
+                    document.getElementById('tableHead').innerHTML = '';
                 document.getElementById('tableBody').innerHTML = '';
                 
                 // Read and parse CSV
@@ -340,22 +299,6 @@
         function displayData(data) {
             const { headers, rows } = data;
             
-            // Update stats
-            const stats = document.getElementById('stats');
-            stats.innerHTML = `
-                <div class="stat-card">
-                    <div class="stat-number">${rows.length}</div>
-                    <div class="stat-label">Rows</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number">${headers.length}</div>
-                    <div class="stat-label">Columns</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number">${(rows.length * headers.length).toLocaleString()}</div>
-                    <div class="stat-label">Total Cells</div>
-                </div>
-            `;
             
             // Create table headers
             const tableHead = document.getElementById('tableHead');
