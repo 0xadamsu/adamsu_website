@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AdamSu Lab - Pallet Configurator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>AdamSu Lab - Pallet Configurator</h1>
+        <form id="calcForm">
+            <fieldset>
+                <legend>Case Orientation</legend>
+                <label><input type="radio" name="orientation" value="standard" checked> Standard (no rotation)</label>
+                <label><input type="radio" name="orientation" value="rotated"> Rotated (swap case length and width)</label>
+                <label><input type="radio" name="orientation" value="auto"> Maximize (choose best fit)</label>
+            </fieldset>
+            <fieldset>
+                <legend>Case Dimensions (inches)</legend>
+                <label>Length: <input type="number" id="caseLength" step="any" required></label>
+                <label>Width: <input type="number" id="caseWidth" step="any" required></label>
+                <label>Height: <input type="number" id="caseHeight" step="any" required></label>
+            </fieldset>
+            <fieldset>
+                <legend>Pallet Dimensions (inches)</legend>
+                <label>Length: <input type="number" id="palletLength" value="48" step="any" required></label>
+                <label>Width: <input type="number" id="palletWidth" value="40" step="any" required></label>
+                <label>Height: <input type="number" id="palletHeight" value="60" step="any" required></label>
+            </fieldset>
+            <button type="submit">Calculate</button>
+        </form>
+        <div id="result"></div>
+        <div id="breakdown" style="margin-top:16px; font-size:16px; text-align:center;"></div>
+        <div id="pallet3d" style="width: 800px; height: 320px; margin: 20px auto 0;"></div>
+    </div>
+    <!-- three.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.153.0/build/three.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
