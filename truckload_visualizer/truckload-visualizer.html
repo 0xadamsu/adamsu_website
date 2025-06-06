@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Truckload Visualizer - Calculate Pallets & Weight</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            padding: 40px;
+        }
+
+        .calculator-section {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid #e9ecef;
+        }
+
+        .visualization-section {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid #e9ecef;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .product-row {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #dee2e6;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .product-header {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 0;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #495057;
+            font-size: 0.9rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #dee2e6;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .product-results {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+            padding-top: 15px;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .product-result {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .product-result-label {
+            font-size: 0.8rem;
+            color: #6c757d;
+            margin-bottom: 5px;
+        }
+
+        .product-result-value {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .lookup-status {
+            font-size: 0.8rem;
+            margin-top: 5px;
+            padding: 5px 8px;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .lookup-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .lookup-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .lookup-loading {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .product-code-group {
+            position: relative;
+        }
+
+        .auto-fill-indicator {
+            position: absolute;
+            top: -5px;
+            right: 8px;
+            font-size: 0.7rem;
+            color: #28a745;
+            font-weight: 600;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .result-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .result-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-bottom: 8px;
+        }
+
+        .result-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        .limit-checker {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .limit-ok {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .limit-exceeded {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .chart-container {
+            height: 300px;
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #dee2e6;
+        }
+
+        .chart-placeholder {
+            color: #6c757d;
+            font-size: 1.1rem;
+            text-align: center;
+        }
+
+        .bar-chart {
+            display: flex;
+            align-items: end;
+            justify-content: center;
+            height: 200px;
+            gap: 20px;
+        }
+
+        .bar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px 8px 0 0;
+            position: relative;
+            min-width: 80px;
+            transition: all 0.3s ease;
+        }
+
+        .bar:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+        }
+
+        .bar-label {
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #495057;
+        }
+
+        .bar-value {
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+            }
+
+            .product-results {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Truckload Visualizer</h1>
+            <p>Calculate pallets, weight, and visualize truckload capacity</p>
+        </div>
+
+        <div class="main-content">
+            <div class="calculator-section">
+                <h2 class="section-title">📊 Calculator</h2>
+                
+                <form id="calculatorForm">
+                    <div class="product-row" id="product1">
+                        <div class="product-header">Product 1</div>
+                        <div class="form-row">
+                            <div class="form-group product-code-group">
+                                <label for="productCode1">Product Code</label>
+                                <input type="text" id="productCode1" name="productCode1" placeholder="Enter code">
+                                <div class="auto-fill-indicator" id="autoFill1" style="display: none;">✓ Auto-filled</div>
+                            </div>
+                            <div class="form-group">
+                                <label for="casesToOrder1">Cases to Order</label>
+                                <input type="number" id="casesToOrder1" name="casesToOrder1" placeholder="Cases" min="0" step="1">
+                            </div>
+                            <div class="form-group">
+                                <label for="casesPerPallet1">Cases per Pallet</label>
+                                <input type="number" id="casesPerPallet1" name="casesPerPallet1" placeholder="Per pallet" min="1" step="1">
+                            </div>
+                            <div class="form-group">
+                                <label for="caseWeight1">Case Weight (lbs)</label>
+                                <input type="number" id="caseWeight1" name="caseWeight1" placeholder="Weight" min="0" step="0.1">
+                            </div>
+                        </div>
+                        <div class="product-results">
+                            <div class="product-result">
+                                <div class="product-result-label">Pallets</div>
+                                <div class="product-result-value" id="pallets1">0</div>
+                            </div>
+                            <div class="product-result">
+                                <div class="product-result-label">Weight (lbs)</div>
+                                <div class="product-result-value" id="weight1">0</div>
+                            </div>
+                        </div>
+                        <div class="lookup-status" id="lookupStatus1" style="display: none;"></div>
+                    </div>
+
+                    <div class="product-row" id="product2">
+                        <div class="product-header">Product 2</div>
+                        <div class="form-row">
+                            <div class="form-group product-code-group">
+                                <label for="productCode2">Product Code</label>
+                                <input type="text" id="productCode2" name="productCode2" placeholder="Enter code">
+                                <div class="auto-fill-indicator" id="autoFill2" style="display: none;">✓ Auto-filled</div>
+                            </div>
+                            <div class="form-group">
+                                <label for="casesToOrder2">Cases to Order</label>
+                                <input type="number" id="casesToOrder2" name="casesToOrder2" placeholder="Cases" min="0" step="1">
+                            </div>
+                            <div class="form-group">
+                                <label for="casesPerPallet2">Cases per Pallet</label>
+                                <input type="number" id="casesPerPallet2" name="casesPerPallet2" placeholder="Per pallet" min="1" step="1">
+                            </div>
+                            <div class="form-group">
+                                <label for="caseWeight2">Case Weight (lbs)</label>
+                                <input type="number" id="caseWeight2" name="caseWeight2" placeholder="Weight" min="0" step="0.1">
+                            </div>
+                        </div>
+                        <div class="product-results">
+                            <div class="product-result">
+                                <div class="product-result-label">Pallets</div>
+                                <div class="product-result-value" id="pallets2">0</div>
+                            </div>
+                            <div class="product-result">
+                                <div class="product-result-label">Weight (lbs)</div>
+                                <div class="product-result-value" id="weight2">0</div>
+                            </div>
+                        </div>
+                        <div class="lookup-status" id="lookupStatus2" style="display: none;"></div>
+                    </div>
+
+                    <div class="product-row" id="product3">
+                        <div class="product-header">Product 3</div>
+                        <div class="form-row">
+                            <div class="form-group product-code-group">
+                                <label for="productCode3">Product Code</label>
+                                <input type="text" id="productCode3" name="productCode3" placeholder="Enter code">
+                                <div class="auto-fill-indicator" id="autoFill3" style="display: none;">✓ Auto-filled</div>
+                            </div>
+                            <div class="form-group">
+                                <label for="casesToOrder3">Cases to Order</label>
+                                <input type="number" id="casesToOrder3" name="casesToOrder3" placeholder="Cases" min="0" step="1">
+                            </div>
+                            <div class="form-group">
+                                <label for="casesPerPallet3">Cases per Pallet</label>
+                                <input type="number" id="casesPerPallet3" name="casesPerPallet3" placeholder="Per pallet" min="1" step="1">
+                            </div>
+                            <div class="form-group">
+                                <label for="caseWeight3">Case Weight (lbs)</label>
+                                <input type="number" id="caseWeight3" name="caseWeight3" placeholder="Weight" min="0" step="0.1">
+                            </div>
+                        </div>
+                        <div class="product-results">
+                            <div class="product-result">
+                                <div class="product-result-label">Pallets</div>
+                                <div class="product-result-value" id="pallets3">0</div>
+                            </div>
+                            <div class="product-result">
+                                <div class="product-result-label">Weight (lbs)</div>
+                                <div class="product-result-value" id="weight3">0</div>
+                            </div>
+                        </div>
+                        <div class="lookup-status" id="lookupStatus3" style="display: none;"></div>
+                    </div>
+                </form>
+
+                <div class="results-grid">
+                    <div class="result-card">
+                        <div class="result-label">Total Pallets</div>
+                        <div class="result-value" id="totalPallets">0</div>
+                    </div>
+                    <div class="result-card">
+                        <div class="result-label">Total Weight (lbs)</div>
+                        <div class="result-value" id="totalWeight">0</div>
+                    </div>
+                </div>
+
+                <div class="limit-checker" id="limitChecker">
+                    <span id="limitStatus">Enter values to check limits</span>
+                </div>
+            </div>
+
+            <div class="visualization-section">
+                <h2 class="section-title">📈 Visualization</h2>
+                
+                <div class="chart-container">
+                    <div id="chartContent" class="chart-placeholder">
+                        Enter calculation data to see visualization
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('calculatorForm');
+        const totalPalletsEl = document.getElementById('totalPallets');
+        const totalWeightEl = document.getElementById('totalWeight');
+        const limitCheckerEl = document.getElementById('limitChecker');
+        const limitStatusEl = document.getElementById('limitStatus');
+        const chartContentEl = document.getElementById('chartContent');
+
+        const PALLET_LIMIT = 60;
+        const WEIGHT_LIMIT = 40000;
+        const CSV_FILE = 'ProductCodeReference.csv';
+        
+        let productDatabase = new Map();
+        let csvLoaded = false;
+
+        // Hardcoded product database as fallback
+        function loadFallbackDatabase() {
+            const fallbackData = [
+                ['131680', '32', '25.3'],
+                ['131676', '150', '5.81'],
+                ['131672', '150', '5.81'],
+                ['131673', '24', '25.5'],
+                ['131677', '44', '14.52'],
+                ['131678', '44', '14.52'],
+                ['131679', '56', '17.71'],
+                ['131671', '180', '4.35'],
+                ['131675', '180', '4.35'],
+                ['131610', '50', '14.14'],
+                ['131914', '44', '14.52'],
+                ['131915', '44', '14.52'],
+                ['131916', '180', '4.35'],
+                ['131917', '180', '4.35'],
+                ['131910', '150', '5.81'],
+                ['131911', '150', '5.81'],
+                ['131909', '32', '25.3'],
+                ['131913', '24', '25.5'],
+                ['131912', '56', '17.71']
+            ];
+            
+            fallbackData.forEach(row => {
+                const productCode = row[0].trim();
+                const casesPerPallet = parseFloat(row[1].trim());
+                const caseWeight = parseFloat(row[2].trim());
+                
+                if (productCode && !isNaN(casesPerPallet) && !isNaN(caseWeight)) {
+                    productDatabase.set(productCode.toLowerCase(), {
+                        casesPerPallet,
+                        caseWeight
+                    });
+                }
+            });
+            
+            csvLoaded = true;
+            console.log(`Loaded ${productDatabase.size} products from fallback database`);
+        }
+
+        // Load CSV data on page load
+        async function loadProductDatabase() {
+            try {
+                const response = await fetch(CSV_FILE);
+                if (!response.ok) {
+                    throw new Error(`Failed to load ${CSV_FILE}: ${response.status}`);
+                }
+                
+                const csvText = await response.text();
+                // Remove BOM if present
+                const cleanCsvText = csvText.replace(/^\uFEFF/, '');
+                const lines = cleanCsvText.split('\n').filter(line => line.trim() !== '');
+                
+                console.log('CSV lines loaded:', lines.length);
+                console.log('First few lines:', lines.slice(0, 3));
+                
+                // Skip header row and parse data
+                for (let i = 1; i < lines.length; i++) {
+                    const row = parseCSVLine(lines[i]);
+                    
+                    if (row.length >= 3) {
+                        const productCode = row[0].trim();
+                        const casesPerPallet = parseFloat(row[1].trim());
+                        const caseWeight = parseFloat(row[2].trim());
+                        
+                        if (productCode && !isNaN(casesPerPallet) && !isNaN(caseWeight)) {
+                            productDatabase.set(productCode.toLowerCase(), {
+                                casesPerPallet,
+                                caseWeight
+                            });
+                        }
+                    }
+                }
+                
+                csvLoaded = true;
+                console.log(`Loaded ${productDatabase.size} products from ${CSV_FILE}`);
+                
+            } catch (error) {
+                console.error('Error loading CSV file:', error);
+                console.log('Using fallback database instead');
+                loadFallbackDatabase();
+            }
+        }
+
+        function parseCSVLine(line) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+            
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    result.push(current.trim());
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            
+            result.push(current.trim());
+            return result.map(cell => cell.replace(/^"|"/g, ''));
+        }
+
+        function lookupProductCode(productCode, productNum) {
+            if (!csvLoaded || !productCode) {
+                hideStatus(productNum);
+                return;
+            }
+
+            const statusEl = document.getElementById(`lookupStatus${productNum}`);
+            const autoFillEl = document.getElementById(`autoFill${productNum}`);
+            const casesPerPalletEl = document.getElementById(`casesPerPallet${productNum}`);
+            const caseWeightEl = document.getElementById(`caseWeight${productNum}`);
+
+            // Look up the product (case-insensitive)
+            const productData = productDatabase.get(productCode.toLowerCase());
+            
+            if (productData) {
+                // Auto-fill the fields
+                casesPerPalletEl.value = productData.casesPerPallet;
+                caseWeightEl.value = productData.caseWeight;
+                
+                // Show success status
+                statusEl.textContent = `✓ Found: ${productData.casesPerPallet} cases/pallet, ${productData.caseWeight} lbs/case`;
+                statusEl.className = 'lookup-status lookup-success';
+                statusEl.style.display = 'block';
+                
+                // Show auto-fill indicator
+                autoFillEl.style.display = 'block';
+                
+                // Update calculations
+                updateCalculations();
+                
+            } else {
+                // Show error status
+                statusEl.textContent = `⚠ Product code "${productCode}" not found in database (${productDatabase.size} products loaded)`;
+                statusEl.className = 'lookup-status lookup-error';
+                statusEl.style.display = 'block';
+                
+                // Hide auto-fill indicator
+                autoFillEl.style.display = 'none';
+            }
+        }
+
+        function hideStatus(productNum) {
+            const statusEl = document.getElementById(`lookupStatus${productNum}`);
+            const autoFillEl = document.getElementById(`autoFill${productNum}`);
+            
+            if (statusEl) statusEl.style.display = 'none';
+            if (autoFillEl) autoFillEl.style.display = 'none';
+        }
+
+        function calculateProduct(productNum) {
+            const casesToOrder = parseFloat(document.getElementById(`casesToOrder${productNum}`).value) || 0;
+            const casesPerPallet = parseFloat(document.getElementById(`casesPerPallet${productNum}`).value) || 1;
+            const caseWeight = parseFloat(document.getElementById(`caseWeight${productNum}`).value) || 0;
+
+            const pallets = casesToOrder > 0 ? Math.ceil(casesToOrder / casesPerPallet) : 0;
+            const weight = casesToOrder * caseWeight;
+
+            document.getElementById(`pallets${productNum}`).textContent = pallets.toLocaleString();
+            document.getElementById(`weight${productNum}`).textContent = weight.toLocaleString();
+
+            return { pallets, weight };
+        }
+
+        function updateCalculations() {
+            const product1 = calculateProduct(1);
+            const product2 = calculateProduct(2);
+            const product3 = calculateProduct(3);
+
+            const totalPallets = product1.pallets + product2.pallets + product3.pallets;
+            const totalWeight = product1.weight + product2.weight + product3.weight;
+
+            totalPalletsEl.textContent = totalPallets.toLocaleString();
+            totalWeightEl.textContent = totalWeight.toLocaleString();
+
+            updateLimitChecker(totalPallets, totalWeight);
+            updateVisualization(totalPallets, totalWeight);
+        }
+
+        function updateLimitChecker(pallets, weight) {
+            let status = '';
+            let className = '';
+
+            if (pallets === 0 && weight === 0) {
+                status = 'Enter values to check limits';
+                className = 'limit-ok';
+            } else if (pallets > PALLET_LIMIT || weight > WEIGHT_LIMIT) {
+                if (pallets > PALLET_LIMIT && weight > WEIGHT_LIMIT) {
+                    status = `⚠️ LIMIT EXCEEDED: Both pallets (${pallets}/${PALLET_LIMIT}) and weight (${weight.toLocaleString()}/${WEIGHT_LIMIT.toLocaleString()} lbs) exceed limits!`;
+                } else if (pallets > PALLET_LIMIT) {
+                    status = `⚠️ LIMIT EXCEEDED: Pallets (${pallets}/${PALLET_LIMIT}) exceed limit!`;
+                } else {
+                    status = `⚠️ LIMIT EXCEEDED: Weight (${weight.toLocaleString()}/${WEIGHT_LIMIT.toLocaleString()} lbs) exceeds limit!`;
+                }
+                className = 'limit-exceeded';
+            } else {
+                status = `✅ Within limits: ${pallets}/${PALLET_LIMIT} pallets, ${weight.toLocaleString()}/${WEIGHT_LIMIT.toLocaleString()} lbs`;
+                className = 'limit-ok';
+            }
+
+            limitStatusEl.textContent = status;
+            limitCheckerEl.className = `limit-checker ${className}`;
+        }
+
+        function updateVisualization(pallets, weight) {
+            if (pallets === 0 && weight === 0) {
+                chartContentEl.innerHTML = '<div class="chart-placeholder">Enter calculation data to see visualization</div>';
+                return;
+            }
+
+            const palletPercentage = Math.min((pallets / PALLET_LIMIT) * 100, 100);
+            const weightPercentage = Math.min((weight / WEIGHT_LIMIT) * 100, 100);
+
+            const palletHeight = Math.max(palletPercentage * 2, 20);
+            const weightHeight = Math.max(weightPercentage * 2, 20);
+
+            chartContentEl.innerHTML = `
+                <div class="bar-chart">
+                    <div class="bar" style="height: ${palletHeight}px; background: ${pallets > PALLET_LIMIT ? 'linear-gradient(135deg, #e74c3c 0%, #c0392b 100%)' : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'};">
+                        <div class="bar-value">${pallets}</div>
+                        <div class="bar-label">Pallets<br>(Limit: ${PALLET_LIMIT})</div>
+                    </div>
+                    <div class="bar" style="height: ${weightHeight}px; background: ${weight > WEIGHT_LIMIT ? 'linear-gradient(135deg, #e74c3c 0%, #c0392b 100%)' : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'};">
+                        <div class="bar-value">${weight.toLocaleString()}</div>
+                        <div class="bar-label">Weight (lbs)<br>(Limit: ${WEIGHT_LIMIT.toLocaleString()})</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Add event listeners for product code lookups
+        document.getElementById('productCode1').addEventListener('input', function(e) {
+            const value = e.target.value.trim();
+            if (value.length > 0) {
+                lookupProductCode(value, 1);
+            } else {
+                hideStatus(1);
+                updateCalculations();
+            }
+        });
+
+        document.getElementById('productCode2').addEventListener('input', function(e) {
+            const value = e.target.value.trim();
+            if (value.length > 0) {
+                lookupProductCode(value, 2);
+            } else {
+                hideStatus(2);
+                updateCalculations();
+            }
+        });
+
+        document.getElementById('productCode3').addEventListener('input', function(e) {
+            const value = e.target.value.trim();
+            if (value.length > 0) {
+                lookupProductCode(value, 3);
+            } else {
+                hideStatus(3);
+                updateCalculations();
+            }
+        });
+
+        form.addEventListener('input', updateCalculations);
+        
+        // Load product database and initialize
+        window.addEventListener('load', async function() {
+            await loadProductDatabase();
+            updateCalculations();
+        });
+        
+        updateCalculations();
+    </script>
+</body>
+</html>

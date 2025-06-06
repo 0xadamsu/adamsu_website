@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trinity Houston Warehouse Inventory Report</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #e8f4fd 0%, #d1e7f7 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #1a252f 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            font-size: 0.8rem;
+            opacity: 0.9;
+        }
+
+        .load-section {
+            padding: 40px;
+            text-align: center;
+            border-bottom: 1px solid #b8d4ea;
+        }
+
+        .load-button {
+            display: inline-block;
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #2c3e50 0%, #1a252f 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(44, 62, 80, 0.3);
+        }
+
+        .load-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(44, 62, 80, 0.4);
+        }
+
+        .load-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status-message {
+            margin-top: 15px;
+            font-size: 0.7rem;
+            color: #2c3e50;
+            font-style: italic;
+        }
+
+        .data-section {
+            padding: 40px;
+            display: none;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            min-width: 600px;
+        }
+
+        th {
+            background: linear-gradient(135deg, #2c3e50 0%, #1a252f 100%);
+            color: white;
+            padding: 8px 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: relative;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .filter-dropdown {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 2px 4px;
+            font-size: 0.5rem;
+            cursor: pointer;
+            color: #2c3e50;
+            margin-left: 8px;
+        }
+
+        .filter-dropdown:hover {
+            background: #f0f0f0;
+        }
+
+        .filter-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            z-index: 1000;
+            min-width: 200px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .filter-menu.show {
+            display: block;
+        }
+
+        .filter-search {
+            width: 100%;
+            padding: 8px;
+            border: none;
+            border-bottom: 1px solid #eee;
+            font-size: 0.6rem;
+            outline: none;
+        }
+
+        .filter-options {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .filter-option {
+            padding: 6px 12px;
+            font-size: 0.6rem;
+            color: #2c3e50;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+
+        .filter-option:hover {
+            background: #f0f8ff;
+        }
+
+        .filter-option input[type="checkbox"] {
+            margin-right: 8px;
+        }
+
+        .filter-actions {
+            padding: 8px;
+            border-top: 1px solid #eee;
+            display: flex;
+            gap: 8px;
+        }
+
+        .filter-btn {
+            padding: 4px 8px;
+            font-size: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            cursor: pointer;
+            background: white;
+        }
+
+        .filter-btn:hover {
+            background: #f0f0f0;
+        }
+
+        .filter-btn.primary {
+            background: #2c3e50;
+            color: white;
+            border-color: #2c3e50;
+        }
+
+        .filter-btn.primary:hover {
+            background: #1a252f;
+        }
+
+        .filtered-row {
+            display: none !important;
+        }
+
+        td {
+            padding: 6px 12px;
+            border-bottom: 1px solid #e8f4fd;
+            font-size: 0.65rem;
+            color: #2c3e50;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f1f8ff;
+        }
+
+        tr:hover {
+            background-color: #dbeafe;
+            transition: background-color 0.2s ease;
+        }
+
+
+        .error-message {
+            color: #e74c3c;
+            background: #fef8f8;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #e74c3c;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #2c3e50;
+            font-size: 0.8rem;
+        }
+
+        .loading::after {
+            content: "";
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #2c3e50;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .container {
+                margin: 10px;
+                border-radius: 8px;
+            }
+            
+            .upload-section, .data-section {
+                padding: 20px;
+            }
+            
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Houston Warehouse Inventory Report</h1>
+<p>TPHC Inventory Data Viewer - Auto-loading from local CSV file</p>
+        </div>
+        
+        <div class="load-section">
+            <button id="loadButton" class="load-button">
+                📊 Load TPHC Inventory
+            </button>
+            <div class="status-message" id="statusMessage"></div>
+            <div class="error-message" id="errorMessage"></div>
+        </div>
+        
+        <div class="data-section" id="dataSection">
+            <div class="table-container">
+                <table id="dataTable">
+                    <thead id="tableHead"></thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const CSV_FILE = 'TPHC_Inventory.csv';
+        
+        document.getElementById('loadButton').addEventListener('click', function() {
+            loadCSVFile();
+        });
+        
+        // Auto-load on page load
+        window.addEventListener('load', function() {
+            loadCSVFile();
+        });
+        
+        async function loadCSVFile() {
+            const loadButton = document.getElementById('loadButton');
+            const statusMessage = document.getElementById('statusMessage');
+            const errorMessage = document.getElementById('errorMessage');
+            const dataSection = document.getElementById('dataSection');
+            
+            // Reset error message
+            errorMessage.style.display = 'none';
+            errorMessage.textContent = '';
+            
+            // Show loading state
+            loadButton.disabled = true;
+            loadButton.textContent = '🔄 Loading...';
+            statusMessage.textContent = 'Loading TPHC inventory data...';
+            
+            dataSection.style.display = 'block';
+            document.getElementById('tableHead').innerHTML = '';
+            document.getElementById('tableBody').innerHTML = '';
+            
+            try {
+                const response = await fetch(CSV_FILE);
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to load ${CSV_FILE}: ${response.status} ${response.statusText}`);
+                }
+                
+                const csvText = await response.text();
+                
+                if (!csvText || csvText.trim() === '') {
+                    throw new Error('CSV file is empty');
+                }
+                
+                const data = parseCSV(csvText);
+                displayData(data);
+                
+                statusMessage.textContent = `Loaded ${CSV_FILE} successfully - Last updated: ${new Date().toLocaleString()}`;
+                loadButton.textContent = '🔄 Refresh Data';
+                
+            } catch (error) {
+                console.error('Error loading CSV:', error);
+                showError(`Failed to load ${CSV_FILE}. Make sure the file exists in the same directory.`);
+                statusMessage.textContent = '';
+                loadButton.textContent = '🔄 Retry Load';
+                dataSection.style.display = 'none';
+            } finally {
+                loadButton.disabled = false;
+            }
+        }
+        
+        function parseCSV(csv) {
+            const lines = csv.split('\n').filter(line => line.trim() !== '');
+            if (lines.length === 0) {
+                throw new Error('Empty CSV file');
+            }
+            
+            const result = [];
+            const headers = parseCSVLine(lines[0]);
+            
+            for (let i = 1; i < lines.length; i++) {
+                const row = parseCSVLine(lines[i]);
+                if (row.length > 0) {
+                    result.push(row);
+                }
+            }
+            
+            return { headers, rows: result };
+        }
+        
+        function parseCSVLine(line) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+            
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    result.push(current.trim());
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            
+            result.push(current.trim());
+            return result.map(cell => cell.replace(/^"|"$/g, ''));
+        }
+        
+        function displayData(data) {
+            const { headers, rows } = data;
+            
+            
+            // Create table headers with filters
+            const tableHead = document.getElementById('tableHead');
+            const headerRow = document.createElement('tr');
+            headers.forEach((header, index) => {
+                const th = document.createElement('th');
+                th.innerHTML = `
+                    <div class="header-content">
+                        <span>${header || 'Column'}</span>
+                        <span class="filter-dropdown" onclick="toggleFilter(${index})">▼</span>
+                    </div>
+                    <div class="filter-menu" id="filter-${index}">
+                        <input type="text" class="filter-search" placeholder="Search..." onkeyup="filterSearch(${index})">
+                        <div class="filter-options" id="filter-options-${index}"></div>
+                        <div class="filter-actions">
+                            <button class="filter-btn" onclick="selectAllFilter(${index})">All</button>
+                            <button class="filter-btn" onclick="clearAllFilter(${index})">None</button>
+                            <button class="filter-btn primary" onclick="applyFilter(${index})">Apply</button>
+                        </div>
+                    </div>
+                `;
+                headerRow.appendChild(th);
+            });
+            tableHead.appendChild(headerRow);
+            
+            // Initialize filters
+            initializeFilters(data);
+            
+            // Create table body
+            const tableBody = document.getElementById('tableBody');
+            rows.forEach(row => {
+                const tr = document.createElement('tr');
+                for (let i = 0; i < headers.length; i++) {
+                    const td = document.createElement('td');
+                    td.textContent = row[i] || '';
+                    tr.appendChild(td);
+                }
+                tableBody.appendChild(tr);
+            });
+        }
+        
+        let currentData = null;
+        let activeFilters = {};
+        
+        function initializeFilters(data) {
+            currentData = data;
+            const { headers, rows } = data;
+            
+            headers.forEach((header, columnIndex) => {
+                // Get unique values for this column
+                const uniqueValues = [...new Set(rows.map(row => row[columnIndex] || ''))]
+                    .sort((a, b) => a.localeCompare(b));
+                
+                // Populate filter options
+                const optionsContainer = document.getElementById(`filter-options-${columnIndex}`);
+                optionsContainer.innerHTML = uniqueValues.map(value => `
+                    <div class="filter-option">
+                        <input type="checkbox" id="filter-${columnIndex}-${value}" value="${value}" checked>
+                        <label for="filter-${columnIndex}-${value}">${value || '(Empty)'}</label>
+                    </div>
+                `).join('');
+                
+                // Initialize active filters
+                activeFilters[columnIndex] = new Set(uniqueValues);
+            });
+        }
+        
+        function toggleFilter(columnIndex) {
+            // Close all other filter menus
+            document.querySelectorAll('.filter-menu').forEach(menu => {
+                if (menu.id !== `filter-${columnIndex}`) {
+                    menu.classList.remove('show');
+                }
+            });
+            
+            // Toggle current menu
+            const filterMenu = document.getElementById(`filter-${columnIndex}`);
+            filterMenu.classList.toggle('show');
+        }
+        
+        function filterSearch(columnIndex) {
+            const searchInput = document.querySelector(`#filter-${columnIndex} .filter-search`);
+            const searchTerm = searchInput.value.toLowerCase();
+            const options = document.querySelectorAll(`#filter-options-${columnIndex} .filter-option`);
+            
+            options.forEach(option => {
+                const label = option.querySelector('label').textContent.toLowerCase();
+                option.style.display = label.includes(searchTerm) ? 'flex' : 'none';
+            });
+        }
+        
+        function selectAllFilter(columnIndex) {
+            const checkboxes = document.querySelectorAll(`#filter-options-${columnIndex} input[type="checkbox"]`);
+            checkboxes.forEach(checkbox => checkbox.checked = true);
+        }
+        
+        function clearAllFilter(columnIndex) {
+            const checkboxes = document.querySelectorAll(`#filter-options-${columnIndex} input[type="checkbox"]`);
+            checkboxes.forEach(checkbox => checkbox.checked = false);
+        }
+        
+        function applyFilter(columnIndex) {
+            const checkboxes = document.querySelectorAll(`#filter-options-${columnIndex} input[type="checkbox"]:checked`);
+            const selectedValues = Array.from(checkboxes).map(cb => cb.value);
+            
+            activeFilters[columnIndex] = new Set(selectedValues);
+            
+            // Apply all filters
+            applyAllFilters();
+            
+            // Close filter menu
+            document.getElementById(`filter-${columnIndex}`).classList.remove('show');
+        }
+        
+        function applyAllFilters() {
+            const tableBody = document.getElementById('tableBody');
+            const rows = tableBody.querySelectorAll('tr');
+            
+            rows.forEach((row, rowIndex) => {
+                let showRow = true;
+                
+                // Check each column filter
+                Object.keys(activeFilters).forEach(columnIndex => {
+                    const cellValue = currentData.rows[rowIndex][columnIndex] || '';
+                    if (!activeFilters[columnIndex].has(cellValue)) {
+                        showRow = false;
+                    }
+                });
+                
+                if (showRow) {
+                    row.classList.remove('filtered-row');
+                } else {
+                    row.classList.add('filtered-row');
+                }
+            });
+        }
+        
+        // Close filter menus when clicking outside
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('.filter-dropdown') && !event.target.closest('.filter-menu')) {
+                document.querySelectorAll('.filter-menu').forEach(menu => {
+                    menu.classList.remove('show');
+                });
+            }
+        });
+        
+        function showError(message) {
+            const errorMessage = document.getElementById('errorMessage');
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+            document.getElementById('dataSection').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
