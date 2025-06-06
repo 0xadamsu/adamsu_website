@@ -14,14 +14,16 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
             line-height: 1.6;
-            color: #333;
-            background-color: #f8f9fa;
+            color: #2c3e50;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 50%, #90caf9 100%);
+            min-height: 100vh;
         }
 
         header {
-            background-color: #2c3e50;
+            background: linear-gradient(135deg, #42a5f5 0%, #2196f3 50%, #1976d2 100%);
             padding: 1rem 0;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 20px rgba(33, 150, 243, 0.3);
+            backdrop-filter: blur(10px);
         }
 
         nav {
@@ -35,9 +37,15 @@
 
         .logo {
             color: white;
-            font-size: 1.5rem;
-            font-weight: bold;
+            font-size: 1.8rem;
+            font-weight: 700;
             text-decoration: none;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .logo:hover {
+            transform: scale(1.05);
         }
 
         .dropdown {
@@ -46,43 +54,54 @@
         }
 
         .dropdown-btn {
-            background-color: #3498db;
+            background: linear-gradient(135deg, #64b5f6 0%, #42a5f5 100%);
             color: white;
-            padding: 12px 20px;
+            padding: 12px 24px;
             border: none;
-            border-radius: 5px;
+            border-radius: 25px;
             cursor: pointer;
             font-size: 16px;
+            font-weight: 600;
             text-decoration: none;
             display: inline-block;
-            transition: background-color 0.3s;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(100, 181, 246, 0.4);
         }
 
         .dropdown-btn:hover {
-            background-color: #2980b9;
+            background: linear-gradient(135deg, #42a5f5 0%, #1e88e5 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(100, 181, 246, 0.6);
         }
 
         .dropdown-content {
             display: none;
             position: absolute;
-            background-color: white;
-            min-width: 200px;
-            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-            border-radius: 5px;
-            z-index: 1;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            min-width: 220px;
+            box-shadow: 0 10px 30px rgba(33, 150, 243, 0.3);
+            border-radius: 15px;
+            z-index: 1000;
             right: 0;
+            border: 1px solid rgba(66, 165, 245, 0.2);
         }
 
         .dropdown-content a {
-            color: #333;
-            padding: 12px 16px;
+            color: #2c3e50;
+            padding: 12px 20px;
             text-decoration: none;
             display: block;
-            transition: background-color 0.3s;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            border-radius: 10px;
+            margin: 5px;
         }
 
         .dropdown-content a:hover {
-            background-color: #f1f1f1;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            color: #1976d2;
+            transform: translateX(5px);
         }
 
         .dropdown:hover .dropdown-content {
@@ -97,15 +116,23 @@
         }
 
         h1 {
-            font-size: 3rem;
+            font-size: 3.5rem;
             margin-bottom: 1rem;
-            color: #2c3e50;
+            color: #1976d2;
+            text-shadow: 0 4px 8px rgba(25, 118, 210, 0.3);
+            font-weight: 800;
+            background: linear-gradient(135deg, #42a5f5 0%, #1976d2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .subtitle {
-            font-size: 1.2rem;
-            color: #7f8c8d;
+            font-size: 1.3rem;
+            color: #546e7a;
             margin-bottom: 3rem;
+            font-weight: 500;
+            opacity: 0.9;
         }
 
         .tools-section {
@@ -116,50 +143,107 @@
         }
 
         .tool-card {
-            background: white;
-            padding: 2rem;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            transition: transform 0.3s, box-shadow 0.3s;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 2.5rem;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(33, 150, 243, 0.2);
+            transition: all 0.4s ease;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tool-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(66, 165, 245, 0.1), transparent);
+            transition: left 0.6s ease;
         }
 
         .tool-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(33, 150, 243, 0.3);
+        }
+
+        .tool-card:hover::before {
+            left: 100%;
         }
 
         .tool-card h3 {
-            color: #2c3e50;
+            color: #1976d2;
             margin-bottom: 1rem;
-            font-size: 1.5rem;
+            font-size: 1.6rem;
+            font-weight: 700;
+            position: relative;
         }
 
         .tool-card p {
-            color: #7f8c8d;
-            margin-bottom: 1.5rem;
+            color: #546e7a;
+            margin-bottom: 2rem;
+            font-size: 1.05rem;
+            line-height: 1.6;
         }
 
         .tool-btn {
-            background-color: #3498db;
+            background: linear-gradient(135deg, #42a5f5 0%, #2196f3 100%);
             color: white;
-            padding: 10px 20px;
+            padding: 14px 28px;
             border: none;
-            border-radius: 5px;
+            border-radius: 25px;
             text-decoration: none;
             display: inline-block;
-            transition: background-color 0.3s;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            font-size: 1rem;
+            box-shadow: 0 4px 15px rgba(33, 150, 243, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tool-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
         }
 
         .tool-btn:hover {
-            background-color: #2980b9;
+            background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(33, 150, 243, 0.6);
+        }
+
+        .tool-btn:hover::before {
+            left: 100%;
         }
 
         footer {
-            background-color: #2c3e50;
+            background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
             color: white;
             text-align: center;
             padding: 2rem 0;
             margin-top: 4rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
         }
     </style>
 </head>

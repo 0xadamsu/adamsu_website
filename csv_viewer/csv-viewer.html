@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trinity Houston Warehouse Inventory Report</title>
+    <title>CSV Viewer - Adam Su's Website</title>
     <style>
         * {
             margin: 0;
@@ -12,62 +12,165 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #e8f4fd 0%, #d1e7f7 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 50%, #90caf9 100%);
             min-height: 100vh;
-            padding: 20px;
+            color: #2c3e50;
+        }
+
+        /* Navigation Styles */
+        .navbar {
+            background: linear-gradient(135deg, #42a5f5 0%, #2196f3 50%, #1976d2 100%);
+            padding: 1rem 0;
+            box-shadow: 0 4px 20px rgba(33, 150, 243, 0.3);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-logo {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-decoration: none;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .nav-logo:hover {
+            transform: scale(1.05);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .nav-link.active {
+            background: rgba(255, 255, 255, 0.3);
+            font-weight: 600;
         }
 
         .container {
-            max-width: 1800px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            max-width: 1600px;
+            margin: 2rem auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(33, 150, 243, 0.2);
             overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.3);
         }
 
         .header {
-            background: linear-gradient(135deg, #2c3e50 0%, #1a252f 100%);
+            background: linear-gradient(135deg, #42a5f5 0%, #2196f3 50%, #1976d2 100%);
             color: white;
-            padding: 30px;
+            padding: 2rem;
             text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
         }
 
         .header h1 {
-            font-size: 1.8rem;
-            margin-bottom: 10px;
-            font-weight: 300;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+            text-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            position: relative;
+            z-index: 1;
         }
 
         .header p {
-            font-size: 0.8rem;
-            opacity: 0.9;
+            font-size: 1.1rem;
+            opacity: 0.95;
+            position: relative;
+            z-index: 1;
+            font-weight: 400;
         }
 
         .load-section {
-            padding: 40px;
+            padding: 3rem;
             text-align: center;
-            border-bottom: 1px solid #b8d4ea;
+            border-bottom: 1px solid rgba(66, 165, 245, 0.2);
+            background: rgba(255, 255, 255, 0.5);
         }
 
         .load-button {
             display: inline-block;
-            padding: 15px 30px;
-            background: linear-gradient(135deg, #2c3e50 0%, #1a252f 100%);
+            padding: 16px 32px;
+            background: linear-gradient(135deg, #42a5f5 0%, #2196f3 100%);
             color: white;
             border: none;
-            border-radius: 50px;
+            border-radius: 25px;
             cursor: pointer;
-            font-size: 0.8rem;
-            font-weight: 500;
+            font-size: 1rem;
+            font-weight: 600;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(44, 62, 80, 0.3);
+            box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .load-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
         }
 
         .load-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(44, 62, 80, 0.4);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(33, 150, 243, 0.6);
+            background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
+        }
+
+        .load-button:hover::before {
+            left: 100%;
         }
 
         .load-button:disabled {
@@ -287,10 +390,22 @@
     </style>
 </head>
 <body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="../index.html" class="nav-logo">Adam Su's Website</a>
+            <div class="nav-links">
+                <a href="../index.html" class="nav-link">Home</a>
+                <a href="csv-viewer.html" class="nav-link active">CSV Viewer</a>
+                <a href="../truckload_visualizer/truckload-visualizer.html" class="nav-link">Truckload Visualizer</a>
+                <a href="../pallet_configurator/pallet-configurator.html" class="nav-link">Pallet Configurator</a>
+            </div>
+        </div>
+    </nav>
+
     <div class="container">
         <div class="header">
-            <h1>Houston Warehouse Inventory Report</h1>
-<p>TPHC Inventory Data Viewer - Auto-loading from local CSV file</p>
+            <h1>📊 CSV Viewer</h1>
+            <p>Powerful data visualization and filtering for CSV files</p>
         </div>
         
         <div class="load-section">
